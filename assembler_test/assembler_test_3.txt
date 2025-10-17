@@ -1,0 +1,13 @@
+        lw      0       1       num         ; r1 = num
+        lw      0       2       one         ; r2 = 1
+        jalr    4       7                   ; jump to subroutine (r7 holds return)
+        halt
+num     .fill   10
+one     .fill   1
+        noop
+        noop
+        noop
+subr    add     1       2       3           ; r3 = r1 + r2
+        beq     0       0       endSub      ; jump to endSub
+        noop
+endSub  jalr    7       4                   ; return
