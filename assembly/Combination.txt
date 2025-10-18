@@ -1,0 +1,80 @@
+        lw      0   5   stack       ; r5 = address of stack (stack pointer)
+        lw      0   6   neg1        ; r6 = -1
+        lw      0   1   n           ; r1 = n
+        lw      0   2   r           ; r2 = r
+
+        lw      0   3   zero        ; r3 = 0 (clear return reg)
+        lw      0   4   one         ; r4 = 1 (constant 1)
+
+        lw      0   7   combAddr    ; prepare to call comb
+        jalr    7   4               ; call comb (r4 used as temp for return addr) ; after call r3 has result
+
+        halt
+
+comb    sw      5   7   stack   ; save return addr on stack
+        add     5   4   5       ; sp += 1
+        sw      5   1   stack   ; save r1 (n)
+        add     5   4   5
+        sw      5   2   stack   ; save r2 (r)
+        add     5   4   5
+        sw      5   3   stack   ; save r3 (return reg)
+        add     5   4   5
+        sw      5   4   stack   ; save r4 (const 1)
+        add     5   4   5
+
+        beq     2   0   comb_base1
+
+        beq     1   2   comb_base1
+
+        add     6   6   6       ; (clear temp) -- not strictly necessary
+        add     6   6   6
+        add     6   6   6
+        add     6   6   6
+
+        add     1   6   1       ; r1 = r1 + 0 (keep)
+        add     6   6   6
+        add     6   6   6
+
+
+        add     1   6   1       ; placeholder - we'll load neg1 into r6 then add
+        lw      0   6   neg1
+        add     1   6   1       ; r1 = r1 + (-1)
+
+        lw      0   7   combAddr  ; prepare to call comb
+        jalr    7   4            ; call comb -> result in r3
+
+        sw      5   3   stack
+        add     5   4   5
+
+        add     5   6   5
+        add     5   6   5
+        add     5   6   5
+
+        lw      5   1   stack
+        add     5   6   5
+        lw      5   2   stack
+
+        ; compute comb(n-1, r-1):
+        lw      0   6   neg1
+        add     2   6   2       ; r2 = r2 + (-1)
+        lw      0   7   combAddr
+        jalr    7   4           ; call comb -> result in r3
+
+comb_base1
+        add     0   4   3       ; r3 = 1
+        ; restore saved registers and return
+comb_restore
+        add     5   6   5
+        add     5   6   5
+        add     5   6   5
+        add     5   6   5
+        lw      5   4   stack
+        add     5   6   5
+        lw      5   3   stack
+        add     5   6   5
+        lw      5   2   stack
+        add     5   6   5
+        lw      5   1   stack
+        add     5   6   5
+        lw      5   7   stack
+        jalr    7   2           ; return
