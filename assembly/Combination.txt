@@ -1,80 +1,57 @@
-        lw      0   5   stack       ; r5 = address of stack (stack pointer)
-        lw      0   6   neg1        ; r6 = -1
-        lw      0   1   n           ; r1 = n
-        lw      0   2   r           ; r2 = r
-
-        lw      0   3   zero        ; r3 = 0 (clear return reg)
-        lw      0   4   one         ; r4 = 1 (constant 1)
-
-        lw      0   7   combAddr    ; prepare to call comb
-        jalr    7   4               ; call comb (r4 used as temp for return addr) ; after call r3 has result
-
+        lw      0       1       n           ; load n
+        lw      0       2       r           ; load r
+        lw      0       5       stack       ; load stack pointer
+        lw      0       7       retEnd      ; load return address
+        lw      0       6       comb_sub_adr ; load function address
+        jalr    6       7                   ; call comb_sub
         halt
 
-comb    sw      5   7   stack   ; save return addr on stack
-        add     5   4   5       ; sp += 1
-        sw      5   1   stack   ; save r1 (n)
-        add     5   4   5
-        sw      5   2   stack   ; save r2 (r)
-        add     5   4   5
-        sw      5   3   stack   ; save r3 (return reg)
-        add     5   4   5
-        sw      5   4   stack   ; save r4 (const 1)
-        add     5   4   5
+comb_sub noop
+        beq     2       0       base_case   ; if r==0 return 1
+        beq     1       2       base_case   ; if n==r return 1
 
-        beq     2   0   comb_base1
+        sw      5       7       stack       ; save return address
+        add     5       5       pos1
+        sw      5       1       stack       ; save n
+        add     5       5       pos1
+        sw      5       2       stack       ; save r
+        add     5       5       pos1
 
-        beq     1   2   comb_base1
+        lw      0       6       neg1
+        add     1       6       1           ; n = n-1
+        add     2       0       2           ; r unchanged
+        lw      0       6       comb_sub_adr
+        jalr    6       7                   ; call comb_sub(n-1,r)
+        sw      5       3       stack        ; store result
+        add     5       5       pos1
 
-        add     6   6   6       ; (clear temp) -- not strictly necessary
-        add     6   6   6
-        add     6   6   6
-        add     6   6   6
+        lw      5       2       stack       ; restore r
+        lw      5       1       stack       ; restore n
+        lw      5       7       stack       ; restore return address
+        add     5       5       neg1         ; adjust stack pointer
 
-        add     1   6   1       ; r1 = r1 + 0 (keep)
-        add     6   6   6
-        add     6   6   6
+        lw      0       6       neg1
+        add     1       6       1           ; n = n-1
+        add     2       6       2           ; r = r-1
+        lw      0       6       comb_sub_adr
+        jalr    6       7                   ; call comb_sub(n-1,r-1)
 
+        lw      5       4       stack        ; load first result
+        add     3       4       3           ; sum results
 
-        add     1   6   1       ; placeholder - we'll load neg1 into r6 then add
-        lw      0   6   neg1
-        add     1   6   1       ; r1 = r1 + (-1)
+        jalr    7       0                   ; return
 
-        lw      0   7   combAddr  ; prepare to call comb
-        jalr    7   4            ; call comb -> result in r3
+base_case noop
+        lw      0       3       one          ; return 1
+        jalr    7       0
 
-        sw      5   3   stack
-        add     5   4   5
-
-        add     5   6   5
-        add     5   6   5
-        add     5   6   5
-
-        lw      5   1   stack
-        add     5   6   5
-        lw      5   2   stack
-
-        ; compute comb(n-1, r-1):
-        lw      0   6   neg1
-        add     2   6   2       ; r2 = r2 + (-1)
-        lw      0   7   combAddr
-        jalr    7   4           ; call comb -> result in r3
-
-comb_base1
-        add     0   4   3       ; r3 = 1
-        ; restore saved registers and return
-comb_restore
-        add     5   6   5
-        add     5   6   5
-        add     5   6   5
-        add     5   6   5
-        lw      5   4   stack
-        add     5   6   5
-        lw      5   3   stack
-        add     5   6   5
-        lw      5   2   stack
-        add     5   6   5
-        lw      5   1   stack
-        add     5   6   5
-        lw      5   7   stack
-        jalr    7   2           ; return
+n               .fill   7
+r               .fill   3
+zero            .fill   0
+one             .fill   1
+neg1            .fill   -1
+pos1            .fill   1
+comb_sub_adr    .fill   comb_sub
+stack           .fill   1000
+retEnd          .fill   end
+end             halt

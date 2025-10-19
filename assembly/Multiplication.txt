@@ -1,15 +1,25 @@
-        lw      0   1   mcand      ; r1 = multiplicand copy? (we will use r1 as result so copy mcand to r5)
-        lw      0   2   mplier     ; r2 = multiplier
-        add     0   0   1         ; r1 = 0  ; result in r1
-        lw      0   5   mcand     ; r5 = mcand (preserve original multiplicand)
-        lw      0   4   one       ; r4 = -1
-
-loop    beq     2   0   done      ; if multiplier == 0 -> done
-        add     1   5   1         ; r1 = r1 + r5    (result += multiplicand)
-        add     2   4   2         ; r2 = r2 + (-1)  (multiplier -= 1)
-        beq     0   0   loop
-done    halt
-
-mcand   .fill   6
-mplier  .fill   4
-one     .fill   -1
+        lw      0       2       mcand
+        lw      0       3       mplier
+        add     0       0       1
+        lw      0       5       pos1
+        add     2       0       4
+        add     5       0       6
+        lw      0       7       iter16
+loop_mul noop
+        nand    3       6       5
+        nand    5       5       5
+        beq     5       0       skip_add
+        add     1       4       1
+skip_add noop
+        add     4       4       4
+        add     6       6       6
+        lw      0       5       neg1
+        add     7       5       7
+        beq     7       0       loop_mul
+        halt
+mcand   .fill   32766
+mplier  .fill   10383
+pos1    .fill   1
+neg1    .fill   -1
+iter16  .fill   16
+stack   .fill   0

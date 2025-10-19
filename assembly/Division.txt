@@ -1,0 +1,16 @@
+        lw      0       1       dividend   ; r1 = dividend
+        lw      0       2       divisor    ; r2 = divisor
+        lw      0       3       zero       ; r3 = 0 (quotient)
+        lw      0       4       one        ; r4 = 1
+loop    nand    2       2       5          ; r5 = ~divisor
+        add     5       4       5          ; r5 = -divisor (2's complement)
+        add     1       5       1          ; dividend -= divisor
+        beq     1       6       done       ; if dividend < 0 → done (เราจะตั้ง r6 = 0 ด้านล่าง)
+        add     3       4       3          ; quotient++
+        beq     0       0       loop       ; loop again
+done    halt
+dividend .fill 20
+divisor  .fill 4
+zero     .fill 0
+one      .fill 1
+negcheck .fill 0
