@@ -1,57 +1,43 @@
-        lw      0       1       n           ; load n
-        lw      0       2       r           ; load r
-        lw      0       5       stack       ; load stack pointer
-        lw      0       7       retEnd      ; load return address
-        lw      0       6       comb_sub_adr ; load function address
-        jalr    6       7                   ; call comb_sub
+        lw      0       1       n
+        lw      0       2       r
+        lw      0       6       sp
+        lw      0       7       retAdd
+        lw      0       4       combiAdr
+        jalr    4       7
         halt
-
-comb_sub noop
-        beq     2       0       base_case   ; if r==0 return 1
-        beq     1       2       base_case   ; if n==r return 1
-
-        sw      5       7       stack       ; save return address
-        add     5       5       pos1
-        sw      5       1       stack       ; save n
-        add     5       5       pos1
-        sw      5       2       stack       ; save r
-        add     5       5       pos1
-
-        lw      0       6       neg1
-        add     1       6       1           ; n = n-1
-        add     2       0       2           ; r unchanged
-        lw      0       6       comb_sub_adr
-        jalr    6       7                   ; call comb_sub(n-1,r)
-        sw      5       3       stack        ; store result
-        add     5       5       pos1
-
-        lw      5       2       stack       ; restore r
-        lw      5       1       stack       ; restore n
-        lw      5       7       stack       ; restore return address
-        add     5       5       neg1         ; adjust stack pointer
-
-        lw      0       6       neg1
-        add     1       6       1           ; n = n-1
-        add     2       6       2           ; r = r-1
-        lw      0       6       comb_sub_adr
-        jalr    6       7                   ; call comb_sub(n-1,r-1)
-
-        lw      5       4       stack        ; load first result
-        add     3       4       3           ; sum results
-
-        jalr    7       0                   ; return
-
-base_case noop
-        lw      0       3       one          ; return 1
+combi   noop
+        beq     1       2       baseCase1
+        beq     2       0       baseCase1
+        sw      6       7       0
+        add     6       6       pos1
+        sw      6       1       0
+        add     6       6       pos1
+        sw      6       2       0
+        add     6       6       pos1
+        add     1       1       neg1
+        lw      0       4       combiAdr
+        jalr    4       7
+        add     4       3       0
+        add     6       6       neg1
+        lw      2       6       0
+        add     6       6       neg1
+        lw      1       6       0
+        add     1       1       neg1
+        add     2       2       neg1
+        lw      0       4       combiAdr
+        jalr    4       7        
+        add     3       3       4
+        add     6       6       neg1
+        lw      7       6       0       
+        jalr    7       0      
+baseCase1 noop
+        add     3       0       pos1
         jalr    7       0
-
-n               .fill   7
-r               .fill   3
-zero            .fill   0
-one             .fill   1
-neg1            .fill   -1
-pos1            .fill   1
-comb_sub_adr    .fill   comb_sub
-stack           .fill   1000
-retEnd          .fill   end
-end             halt
+end     halt
+n       .fill   7
+r       .fill   3
+pos1    .fill   1
+neg1    .fill   -1
+sp      .fill   1000
+retAdd  .fill   end
+combiAdr .fill  combi
