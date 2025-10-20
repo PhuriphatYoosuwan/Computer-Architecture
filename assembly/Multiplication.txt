@@ -1,23 +1,23 @@
-        lw      0       2       mcand       ; r2 = mcand
-        lw      0       3       mplier      ; r3 = mplier
-        add     0       0       1           ; r1 = 0 (ผลลัพธ์)
-        lw      0       4       pos1        ; r4 = 1 (mask)
-        lw      0       5       iter16      ; r5 = 16 (รอบ loop)
-loop    noop
-        nand    3       4       6           ; r6 = ~(mplier & mask)
-        nand    6       6       6           ; r6 = (mplier & mask)
-        beq     6       0       skip_add
-        add     1       2       1           ; r1 += mcand
-skip_add noop
-        add     2       2       2           ; mcand <<= 1
-        add     4       4       4           ; mask <<= 1
-        lw      0       7       neg1
-        add     5       7       5           ; counter -= 1
-        beq     5       0       done
-        beq     0       0       loop
-done    halt
-mcand   .fill   32766
-mplier  .fill   10383
-pos1    .fill   1
-neg1    .fill   -1
-iter16  .fill   16
+        lw      0       2       mcand       ; โหลดค่าตัวถูกคูณ (multiplicand) -> r2
+        lw      0       3       mplier      ; โหลดค่าตัวคูณ (multiplier) -> r3
+        add     0       0       1           ; r1 = 0 (ผลลัพธ์เริ่มต้นเป็นศูนย์)
+        lw      0       4       pos1        ; r4 = 1 (mask เริ่มที่บิตตำแหน่ง 0)
+        lw      0       5       iter16      ; r5 = 16 (จำนวนรอบที่จะตรวจ 16 บิตของ mplier)
+loop    noop                                ; เว้นบรรทัด/ตั้งจุดวนซ้ำ (เพื่อให้อ่านง่าย)
+        nand    3       4       6           ; r6 = ~(r3 & r4)   -> ยังเป็นค่ากลับบิต
+        nand    6       6       6           ; r6 = ~(~(r3 & r4) & ~(r3 & r4)) = (r3 & r4) ตอนนี้ r6 = (mplier & mask) ถ้าบิตที่ mask ชี้อยู่เป็น 1 -> r6 != 0, ถ้าเป็น 0 -> r6 = 0                                            
+        beq     6       0       skip_add    ; ถ้า r6 == 0 (บิตเป็นศูนย์) ให้ข้ามการบวกผล
+        add     1       2       1           ; มิฉะนั้น บิตเป็น 1 -> r1 += r2 (บวก mcand เข้าผล)
+skip_add noop                               ; ช่องว่างอ่านง่าย ไม่มีผลอะไร
+        add     2       2       2           ; r2 <<= 1  (เลื่อน mcand ซ้าย 1 บิต = คูณ 2)
+        add     4       4       4           ; r4 <<= 1  (เลื่อน mask ซ้าย 1 บิต เพื่อเช็คบิตถัดไปของ mplier)
+        lw      0       7       neg1        ; r7 = -1  (เตรียมไว้ลบตัวนับ)
+        add     5       7       5           ; r5 += (-1) -> ลดรอบลง 1
+        beq     5       0       done        ; ถ้ารอบเหลือ 0 แล้ว -> ออกจากลูป
+        beq     0       0       loop        ; ไม่งั้นกระโดดกลับไปตรวจบิตถัดไป
+done    halt                                 ; จบโปรแกรม ผลลัพธ์อยู่ใน r1
+mcand   .fill   32766                        ; ค่า multiplicand เริ่มต้น
+mplier  .fill   10383                        ; ค่า multiplier เริ่มต้น
+pos1    .fill   1                            ; ค่าคงที่ 1 สำหรับ mask เริ่มต้น
+neg1    .fill   -1                           ; ค่าคงที่ -1 ใช้สำหรับลดตัวนับ
+iter16  .fill   16                           ; จำนวนบิตที่จะประมวลผล (16 รอบ)
