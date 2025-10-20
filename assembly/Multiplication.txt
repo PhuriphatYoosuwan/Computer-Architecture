@@ -1,25 +1,23 @@
-        lw      0       2       mcand
-        lw      0       3       mplier
-        add     0       0       1
-        lw      0       5       pos1
-        add     2       0       4
-        add     5       0       6
-        lw      0       7       iter16
-loop_mul noop
-        nand    3       6       5
-        nand    5       5       5
-        beq     5       0       skip_add
-        add     1       4       1
+        lw      0       2       mcand       ; r2 = mcand
+        lw      0       3       mplier      ; r3 = mplier
+        add     0       0       1           ; r1 = 0 (ผลลัพธ์)
+        lw      0       4       pos1        ; r4 = 1 (mask)
+        lw      0       5       iter16      ; r5 = 16 (รอบ loop)
+loop    noop
+        nand    3       4       6           ; r6 = ~(mplier & mask)
+        nand    6       6       6           ; r6 = (mplier & mask)
+        beq     6       0       skip_add
+        add     1       2       1           ; r1 += mcand
 skip_add noop
-        add     4       4       4
-        add     6       6       6
-        lw      0       5       neg1
-        add     7       5       7
-        beq     7       0       loop_mul
-        halt
+        add     2       2       2           ; mcand <<= 1
+        add     4       4       4           ; mask <<= 1
+        lw      0       7       neg1
+        add     5       7       5           ; counter -= 1
+        beq     5       0       done
+        beq     0       0       loop
+done    halt
 mcand   .fill   32766
 mplier  .fill   10383
 pos1    .fill   1
 neg1    .fill   -1
 iter16  .fill   16
-stack   .fill   0
