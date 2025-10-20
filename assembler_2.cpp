@@ -8,17 +8,14 @@
 #include <vector>
 using namespace std;
 
-//-----------------------------
 // โครงสร้างข้อมูลสำหรับ 1 บรรทัด assembly
-//-----------------------------
 struct Instruction {
     string label, opcode, arg0, arg1, arg2;
 };
 
-//-----------------------------
-// ฟังก์ชันไว้ตรวจว่า string เป็นตัวเลขล้วนหรือไม่
+
+// ฟังก์ชันไว้ตรวจสอบว่า string เป็นตัวเลขทั้งหมดหรือไม่
 // ใช้เพื่อแยกว่า argument เป็น immediate หรือ label
-//-----------------------------
 bool isNumber(const string &s) {
     if (s.empty()) return false;
     char *p;
@@ -26,20 +23,18 @@ bool isNumber(const string &s) {
     return (*p == 0);
 }
 
-//-----------------------------
-// ฟังก์ชัน sign-extend ค่าจาก 16 บิตเป็น 32 บิต
-// (ไม่ได้ถูกใช้ในเวอร์ชันนี้ แต่เป็นยูทิลิตี้มาตรฐาน)
-//-----------------------------
+// ฟังก์ชันขยายค่าจำนวนเต็มจาก 16 บิต ให้เป็น 32 บิต
+// ใช้ในกรณีที่ค่าตัวเลขเป็นลบ เพื่อให้ผลยังคงถูกต้องหลังขยายบิต
 int convertNum(int num) {
     if (num & (1 << 15)) num -= (1 << 16);
     return num;
 }
 
-//-----------------------------
-// ฟังก์ชันอ่านและแยก 1 บรรทัดจากไฟล์ Assembly
-// - ตัดคอมเมนต์
-// - แยกส่วน label, opcode, arg0–arg2
-//-----------------------------
+// ฟังก์ชันสำหรับอ่านและแยกคำสั่ง Assembly ทีละบรรทัด ทำหน้าที่:
+// 1.อ่านข้อความจากไฟล์ 1 บรรทัด
+// 2.ตัดส่วนที่เป็นคอมเมนต์ออก (หลังเครื่องหมาย ';')
+// 3.แยกข้อความออกเป็นคำ ๆ (label, opcode, และ argument ต่าง ๆ)
+// 4.เก็บผลลัพธ์ลงในโครงสร้าง Instruction
 int readAndParse(ifstream &inFile, Instruction &inst) {
     string line;
     if (!getline(inFile, line)) return 0;   // end of file
@@ -82,48 +77,58 @@ int readAndParse(ifstream &inFile, Instruction &inst) {
     return 1;
 }
 
-//-----------------------------
-// ฟังก์ชันหลัก: Assembler (2-pass assembler)
-//-----------------------------
+// ฟังก์ชันหลักของโปรแกรม Assembler
+// ทำหน้าที่แปลงไฟล์ Assembly ให้เป็น Machine Code
+// โดยใช้กระบวนการ 2 รอบ (2-pass):
+// Pass 1: อ่านไฟล์เพื่อเก็บตำแหน่งของ label แต่ละตัว
+// Pass 2: แปลงคำสั่งทั้งหมดเป็นตัวเลข 32 บิต แล้วเขียนลงไฟล์ผลลัพธ์
 void assembler(const string &inputFile, const string &outputFile) {
+    // เปิดไฟล์ Assembly ที่จะอ่านข้อมูลเข้า (inputFile)
     ifstream inFile(inputFile);
-    if (!inFile.is_open()) {
-        cerr << "error opening " << inputFile << endl;
-        exit(1);
-    }
-
-    ofstream outFile(outputFile);
-    if (!outFile.is_open()) {
-        cerr << "error opening " << outputFile << endl;
-        exit(1);
-    }
-
-    // ตารางเก็บ label → address
-    map<string, int> symbolTable;
-    vector<Instruction> instructions;
-    Instruction inst;
-    int address = 0;
-
-    //-----------------------------
-    // PASS 1 : สร้าง symbol table
-    //-----------------------------
-    while (readAndParse(inFile, inst)) {
-        // ถ้าพบบรรทัดที่มี label ให้เก็บตำแหน่ง address
-        if (!inst.label.empty()) {
-            if (symbolTable.count(inst.label)) {
-                cerr << "error: duplicate label " << inst.label << endl;
-                exit(1);
-            }
-            symbolTable[inst.label] = address; // map label → บรรทัดปัจจุบัน
+        if (!inFile.is_open()) {                // ถ้าเปิดไฟล์ไม่ได้
+            cerr << "error opening " << inputFile << endl;  // แสดงข้อความผิดพลาด
+            exit(1);                            // และหยุดการทำงานทันที
         }
 
-        instructions.push_back(inst);
-        address++; // เพิ่ม address ทีละบรรทัด
-    }
+    // เปิดไฟล์ผลลัพธ์สำหรับเขียน Machine Code (outputFile)
+    ofstream outFile(outputFile);
+        if (!outFile.is_open()) {               // ถ้าเปิดไฟล์ไม่ได้
+            cerr << "error opening " << outputFile << endl;
+            exit(1);
+        }
 
-    //-----------------------------
+    // สร้างตัวแปรที่ใช้ภายใน assembler
+    map<string, int> symbolTable;           // ตารางเก็บชื่อ label และตำแหน่ง address ของมัน
+    vector<Instruction> instructions;       // เก็บคำสั่ง Assembly ทั้งหมดในรูปแบบที่แยกส่วนแล้ว
+    Instruction inst;                       // ตัวแปรชั่วคราวไว้ใช้ตอนอ่านแต่ละบรรทัด
+    int address = 0;                        // ตัวนับตำแหน่งคำสั่ง (เริ่มจากบรรทัด 0)
+
+
+        // PASS 1 : สร้างตาราง symbol table
+        // ขั้นตอนนี้จะอ่านไฟล์ Assembly ทีละบรรทัด
+        // เพื่อเก็บชื่อ label และตำแหน่งบรรทัด (address) ของแต่ละคำสั่ง
+        // ข้อมูลเหล่านี้จะถูกนำไปใช้ใน PASS 2 ตอนแปลงเป็น machine code
+        while (readAndParse(inFile, inst)) {
+            // ถ้าบรรทัดนี้มี label อยู่ข้างหน้า (เช่น "loop add 1 2 3")
+            if (!inst.label.empty()) {
+                // ตรวจว่ามี label นี้อยู่ในตารางแล้วหรือยัง
+                // ถ้ามีซ้ำ → แสดง error แล้วหยุดการทำงาน
+                if (symbolTable.count(inst.label)) {
+                    cerr << "error: duplicate label " << inst.label << endl;
+                    exit(1);
+                }
+                // ถ้าไม่ซ้ำ → บันทึก label และตำแหน่งปัจจุบันลง symbol table
+                symbolTable[inst.label] = address; // เช่น "loop" → 3
+            }
+            // เก็บคำสั่งทั้งหมด (รวม label, opcode, arg) ลงใน vector instructions
+            instructions.push_back(inst);
+
+            // เพิ่ม address ทีละ 1 (นับจำนวนบรรทัดของคำสั่ง)
+            address++;
+        }
+
+    
     // PASS 2 : แปลงแต่ละคำสั่งเป็น machine code
-    //-----------------------------
     for (int i = 0; i < (int)instructions.size(); i++) {
         inst = instructions[i];
         int machineCode = 0; // เก็บผลลัพธ์เลข 32 บิต
@@ -211,9 +216,8 @@ void assembler(const string &inputFile, const string &outputFile) {
     exit(0);
 }
 
-//-----------------------------
+
 // main function : เรียก assembler
-//-----------------------------
 int main() {
     // เปลี่ยนชื่อไฟล์ตามที่ต้องการรัน
     assembler("assembly/Multiplication.txt", "machine_code/machine_code.txt");
