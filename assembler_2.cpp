@@ -144,6 +144,6 @@ void assembler(const string &inputFile, const string &outputFile) {
 }
 
 int main() {
-    assembler("assembly/Combination.txt", "machine_code/machine_code.txt");
+    assembler("assembly/Multiplication.txt", "machine_code/machine_code.txt");
     return 0;
 }

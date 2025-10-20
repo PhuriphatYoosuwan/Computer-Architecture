@@ -55,6 +55,7 @@ int simulator(const string &filename) {
 
     while (true) {
         printState(state);
+
         instrCount++;
 
         if (state.pc < 0 || state.pc >= (int)state.mem.size()) {
