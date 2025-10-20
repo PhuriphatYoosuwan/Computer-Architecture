@@ -1,17 +1,17 @@
-        lw      0       1       dividend   ; r1 = dividend
-        lw      0       2       divisor    ; r2 = divisor
-        lw      0       3       zero       ; r3 = 0 (quotient)
-        lw      0       4       one        ; r4 = 1
-loop    nand    2       2       5          ; r5 = ~divisor
-        add     5       4       5          ; r5 = -divisor (2's complement)
-        add     1       5       1          ; dividend -= divisor
-        beq     1       6       done       ; if dividend < 0 → done (เราจะตั้ง r6 = 0 ด้านล่าง)
-        add     3       4       3          ; quotient++
-        beq     0       0       loop       ; loop again
+        lw      0       1       dividend   ; r1 = dividend (โหลดค่า dividend ลง r1)
+        lw      0       2       divisor    ; r2 = divisor (โหลดค่า divisor ลง r2)
+        lw      0       3       zero       ; r3 = 0 (quotient) (โหลดค่า 0 ลง r3)
+        lw      0       4       one        ; r4 = 1 (โหลดค่า 1 ลง r4)
+loop    nand    2       2       5          ; r5 = ~divisor (ทำการกลับบิตทั้งหมดของ 'divisor' ที่อยู่ใน r2 ไปใส่ใน r5 เพื่อเตรียมการลบ)
+        add     5       4       5          ; r5 = -divisor (2's complement) (บวก 1 เข้าไปใน r5 เพื่อให้ r5 กลายเป็นค่าลบของ 'divisor' หรือก็คือ '-divisor')
+        add     1       5       1          ; dividend -= divisor (นำ r1 (dividend) มาลบด้วย r5 (-divisor) ซึ่งก็คือการลบ 'divisor' ออกจาก 'dividend' แล้วเก็บผลลัพธ์กลับไปที่ r1)
+        beq     1       6       done       ; if dividend < 0 → done (เราจะตั้ง r6 = 0 ด้านล่าง) (ถ้าค่าใหม่ของ r1 (dividend) กลายเป็นค่าน้อยกว่าศูนย์ ให้กระโดดไปที่ 'done' เพื่อจบโปรแกรมเพราะลบเกินไปแล้ว)
+        add     3       4       3          ; quotient++ (เพิ่มค่าผลลัพธ์การหาร (quotient) ใน r3 ขึ้นหนึ่ง เพราะเพิ่งทำการลบไปได้หนึ่งครั้ง)
+        beq     0       0       loop       ; loop again (กระโดดกลับไปที่ 'loop' เพื่อทำการลบต่อ)
 done    halt
-dividend .fill 20
-divisor  .fill 4
-zero     .fill 0
-one      .fill 1
-negcheck .fill 0
+dividend .fill 20                          ; (กำหนดให้ 'dividend' มีค่าเริ่มต้นเป็น 20)
+divisor  .fill 4                           ; (กำหนดให้ 'divisor' มีค่าเริ่มต้นเป็น 4)
+zero     .fill 0                           ; (กำหนดให้ 'zero' มีค่าเริ่มต้นเป็น 0)
+one      .fill 1                           ; (กำหนดให้ 'one' มีค่าเริ่มต้นเป็น 1)
+negcheck .fill 0                           ; (กำหนดให้ 'negcheck' มีค่าเริ่มต้นเป็น 0 แต่บรรทัดนี้ไม่ได้ถูกใช้ในโปรแกรม)
 
