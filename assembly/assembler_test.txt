@@ -1,11 +1,11 @@
-        lw      0   1   five
-        lw      1   2   3
-start   add     1   2   1
-        beq     0   1   2
-        beq     0   0   start
-        noop
-done    halt
-five    .fill   5
-neg1    .fill   -1
-stAddr  .fill   start
+        lw      0   1   five        ; โหลดค่า 5 จากหน่วยความจำ (label five) มาเก็บใน r1
+        lw      1   2   3           ; โหลดค่าจากหน่วยความจำที่อยู่ที่ (r1 + 3) มาเก็บใน r2
+start   add     1   2   1           ; นำค่า r1 + r2 แล้วเก็บผลกลับเข้า r1
+        beq     0   1   2           ; ถ้า r1 == 0 ให้ข้ามไป 2 บรรทัด (ไปที่ halt)
+        beq     0   0   start       ; ถ้า 0 == 0 (จริงเสมอ) ให้กระโดดกลับไปที่ start (วนลูป)
+        noop                        ; ไม่ทำอะไร (คำสั่งว่าง)
+done    halt                        ; หยุดการทำงานของโปรแกรม
+five    .fill   5                   ; กำหนดค่า 5 ในหน่วยความจำ (label five)
+neg1    .fill   -1                  ; กำหนดค่า -1 ในหน่วยความจำ (label neg1)
+stAddr  .fill   start               ; กำหนดให้เก็บตำแหน่ง address ของ label start
 
