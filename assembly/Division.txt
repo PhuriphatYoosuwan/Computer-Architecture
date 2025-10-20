@@ -14,3 +14,4 @@ divisor  .fill 4
 zero     .fill 0
 one      .fill 1
 negcheck .fill 0
+

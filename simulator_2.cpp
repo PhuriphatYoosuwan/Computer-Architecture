@@ -48,13 +48,13 @@ int simulator(const string &filename) {
     while (getline(file, line)) {
         if (line.empty()) continue;
         state.mem.push_back(stoi(line));
-        cout << "memory[" << state.mem.size() - 1 << "]=" << state.mem.back() << endl;
+        // cout << "memory[" << state.mem.size() - 1 << "]=" << state.mem.back() << endl;
     }
 
     int instrCount = 0;
 
     while (true) {
-        printState(state);
+        // printState(state);
 
         instrCount++;
 

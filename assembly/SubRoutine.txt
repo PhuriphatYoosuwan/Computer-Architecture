@@ -24,3 +24,4 @@ neg1          .fill        -1
 subAdr        .fill        sub4n
 input         .fill        10
 stack         .fill        0
+

@@ -10,3 +10,4 @@ done    sw      0       3       result      ; MEM[result] = sum
 five    .fill   5
 neg1    .fill   -1
 result  .fill   0
+
